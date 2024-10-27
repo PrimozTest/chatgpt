@@ -1,2 +1,2 @@
 # chatgpt
-Gen AI coding experiments
+Gen AI coding experiments: "Draw a house in javascript"
