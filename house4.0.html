@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2023 Chat GPT 4.0</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/three@0.140.0/build/three.min.js"></script>
+<script>
+    let scene, camera, renderer, house, roof, chimney, treeTrunk, treeTop, window1, window2, pool, door, pathway, gardenChair;
+    let angle = 0; // Initial angle for the rotation
+
+    function init() {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB); // Blue sky
+
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(3, 3, 5);
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        createHouse();
+        createTree();
+        createGround();
+        createPool();
+        addDetails();
+
+        animate();
+    }
+
+    function createHouse() {
+        const houseGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const houseMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF});
+        house = new THREE.Mesh(houseGeometry, houseMaterial);
+        house.position.x = -0.5;
+        house.position.y = 0.5;
+        scene.add(house);
+
+        const roofGeometry = new THREE.ConeGeometry(0.65, 0.5, 4);
+        const roofMaterial = new THREE.MeshBasicMaterial({color: 0xFF0000});
+        roof = new THREE.Mesh(roofGeometry, roofMaterial);
+        roof.position.x = -0.5;
+        roof.position.y = 1.25;
+        roof.rotation.y = Math.PI / 4;
+        scene.add(roof);
+
+        const chimneyGeometry = new THREE.BoxGeometry(0.15, 0.4, 0.15);
+        const chimneyMaterial = new THREE.MeshBasicMaterial({color: 0x654321});
+        chimney = new THREE.Mesh(chimneyGeometry, chimneyMaterial);
+        chimney.position.x = -0.2;
+        chimney.position.y = 1.5;
+        scene.add(chimney);
+
+        const doorGeometry = new THREE.PlaneGeometry(0.3, 0.7);
+        const doorMaterial = new THREE.MeshBasicMaterial({color: 0x8B4513});
+        door = new THREE.Mesh(doorGeometry, doorMaterial);
+        door.position.x = -0.5;
+        door.position.y = 0.35;
+        door.position.z = 0.51; // Slightly in front of the house
+        scene.add(door);
+    }
+
+    function createTree() {
+        const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1, 32);
+        const trunkMaterial = new THREE.MeshBasicMaterial({color: 0x8B4513});
+        treeTrunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+        treeTrunk.position.x = 1.5;
+        treeTrunk.position.y = 0.5;
+        scene.add(treeTrunk);
+
+        const topGeometry = new THREE.ConeGeometry(0.5, 1, 32);
+        const topMaterial = new THREE.MeshBasicMaterial({color: 0x008000});
+        treeTop = new THREE.Mesh(topGeometry, topMaterial);
+        treeTop.position.x = 1.5;
+        treeTop.position.y = 1.5;
+        scene.add(treeTop);
+    }
+
+    function createGround() {
+        const groundGeometry = new THREE.PlaneGeometry(10, 10);
+        const groundMaterial = new THREE.MeshBasicMaterial({color: 0x228B22, side: THREE.DoubleSide});
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = 0;
+        scene.add(ground);
+    }
+
+    function createPool() {
+        const poolGeometry = new THREE.BoxGeometry(1.5, 0.3, 1);
+        const poolMaterial = new THREE.MeshBasicMaterial({color: 0xADD8E6, transparent: true, opacity: 0.6});
+        pool = new THREE.Mesh(poolGeometry, poolMaterial);
+        pool.position.x = -0.5;
+        pool.position.y = 0.15;
+        pool.position.z = -1.2;
+        scene.add(pool);
+    }
+
+    function addDetails() {
+        const pathGeometry = new THREE.PlaneGeometry(0.5, 2);
+        const pathMaterial = new THREE.MeshBasicMaterial({color: 0xD2B48C});
+        pathway = new THREE.Mesh(pathGeometry, pathMaterial);
+        pathway.rotation.x = -Math.PI / 2;
+        pathway.position.x = -0.5; // Align with the house
+        pathway.position.y = 0.01; // Just above the ground
+        pathway.position.z = 0.51; // Next to the door
+        scene.add(pathway);
+
+        const chairGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+        const chairMaterial = new THREE.MeshBasicMaterial({color: 0xA0522D});
+        gardenChair = new THREE.Mesh(chairGeometry, chairMaterial);
+        gardenChair.position.x = -1.5;
+        gardenChair.position.y = 0.2;
+        gardenChair.position.z = -1.5; // Placed near the pool
+        scene.add(gardenChair);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        angle += 0.01; // Increment the angle for rotation
+        camera.position.x = 5 * Math.sin(angle);
+        camera.position.z = 5 * Math.cos(angle);
+        camera.lookAt(new THREE.Vector3(0, 0, 0)); // Camera always looks at the center
+        
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    init();
+</script>
+</body>
+</html>
