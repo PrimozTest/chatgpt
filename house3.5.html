@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>2022 Chat GPT 3.5</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  <body>
+    <!-- Hello! I hope you are enjoying this! Primoz -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.min.js"></script>
+    <script>
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const geometryGround = new THREE.PlaneGeometry(100, 100);
+      const materialGround = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+      const ground = new THREE.Mesh(geometryGround, materialGround);
+      ground.rotation.x = -Math.PI / 2;
+      scene.add(ground);
+
+      const geometryHouse = new THREE.BoxGeometry(10, 10, 10);
+      const materialHouse = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const house = new THREE.Mesh(geometryHouse, materialHouse);
+      house.position.set(0, 5, -30);
+      scene.add(house);
+
+      const geometryPyramid = new THREE.CylinderGeometry(0, 10, 5, 4, 1);
+      const materialPyramid = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+      const pyramid = new THREE.Mesh(geometryPyramid, materialPyramid);
+      pyramid.position.set(0, 7.5, 0);
+      house.add(pyramid);
+
+      const geometryTreeBody = new THREE.CylinderGeometry(1, 1, 10, 8);
+      const materialTreeBody = new THREE.MeshBasicMaterial({ color: 0x8b4513 });
+      const treeBody = new THREE.Mesh(geometryTreeBody, materialTreeBody);
+      treeBody.position.set(30, 5, -30);
+      scene.add(treeBody);
+
+      const geometryTreeTop = new THREE.SphereGeometry(5, 16, 16);
+      const materialTreeTop = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+      const treeTop = new THREE.Mesh(geometryTreeTop, materialTreeTop);
+      treeTop.position.set(0, 10, 0);
+      treeBody.add(treeTop);
+
+      const geometryRoad = new THREE.PlaneGeometry(15, 50);
+      const materialRoad = new THREE.MeshBasicMaterial({ color: 0x808080 });
+      const road = new THREE.Mesh(geometryRoad, materialRoad);
+      road.position.set(0, -5, -35);
+      road.rotation.x = -Math.PI / 2;
+      scene.add(road);
+
+      const geometrySky = new THREE.PlaneGeometry(40, 20);
+      const materialSky = new THREE.MeshBasicMaterial({ color: 0x87ceeb });
+      const sky = new THREE.Mesh(geometrySky, materialSky);
+      sky.position.set(0, 0.5, 10);
+      sky.rotation.x = -Math.PI / 2;
+      scene.add(sky);
+
+      const geometrySky2 = new THREE.PlaneGeometry(20, 5);
+      const materialSky2 = new THREE.MeshBasicMaterial({ color: 0xa9a9a9 });
+      const sky2 = new THREE.Mesh(geometrySky2, materialSky2);
+      sky2.position.set(0.5, 0.5, 2);
+      sky2.rotation.x = -Math.PI / 2;
+      scene.add(sky2);
+
+      camera.position.set(0, 20, 50);
+      camera.lookAt(0, 5, -30);
+
+      const animate = function () {
+        requestAnimationFrame(animate);
+
+        const time = Date.now() * 0.001;
+        const radius = 50;
+
+        camera.position.x = radius * Math.sin(time);
+        camera.position.z = radius * Math.cos(time);
+        camera.lookAt(0, 5, -30);
+
+        renderer.render(scene, camera);
+        };
+
+        animate();
+
+
+    </script>
+  </body>
+</html>
