@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enhanced 3D House Scene with Final Improvements</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+    </style>
+</head>
+<body>
+    <!-- Include Three.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <!-- Include OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Scene, Camera, Renderer
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(
+            45, window.innerWidth / window.innerHeight, 0.1, 1000
+        );
+        const cameraRadius = 40; // Zoomed in more
+        let cameraAngle = 0;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        // Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.enablePan = false;
+        controls.enableZoom = false;
+        controls.autoRotate = false;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffddaa, 1);
+        directionalLight.position.set(-50, 100, -50);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 500;
+        scene.add(directionalLight);
+
+        // Ground
+        const groundGeometry = new THREE.PlaneGeometry(500, 500);
+        const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Sky with Sunset Colors
+        const skyGeometry = new THREE.SphereGeometry(500, 60, 40);
+        const skyMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffcc88,
+            side: THREE.BackSide
+        });
+        const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+        scene.add(sky);
+
+        // Sun
+        const sunGeometry = new THREE.SphereGeometry(10, 32, 32);
+        const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        sun.position.set(-100, 50, -100);
+        scene.add(sun);
+
+        // Clouds
+        function createCloud(x, y, z) {
+            const cloudGeometry = new THREE.SphereGeometry(5, 32, 32);
+            const cloudMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial);
+            cloud.position.set(x, y, z);
+            scene.add(cloud);
+        }
+        createCloud(20, 40, -30);
+        createCloud(-30, 45, 40);
+        createCloud(50, 50, 50);
+
+        // Fence around the property
+        const fenceLength = 80;
+        const fenceHeight = 2;
+        const fenceThickness = 0.1;
+        const fenceMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+
+        // Front fence with a gate
+        const fenceFrontGeometry = new THREE.BoxGeometry(fenceLength / 2 - 5, fenceHeight, fenceThickness);
+        const fenceFrontLeft = new THREE.Mesh(fenceFrontGeometry, fenceMaterial);
+        fenceFrontLeft.position.set(- (fenceLength / 4 + 2.5), fenceHeight / 2, -fenceLength / 2);
+        scene.add(fenceFrontLeft);
+
+        const fenceFrontRight = fenceFrontLeft.clone();
+        fenceFrontRight.position.x = fenceLength / 4 + 2.5;
+        scene.add(fenceFrontRight);
+
+        // Side and back fences
+        const fenceSideGeometry = new THREE.BoxGeometry(fenceThickness, fenceHeight, fenceLength);
+        const fenceLeft = new THREE.Mesh(fenceSideGeometry, fenceMaterial);
+        fenceLeft.position.set(-fenceLength / 2, fenceHeight / 2, 0);
+        scene.add(fenceLeft);
+
+        const fenceRight = fenceLeft.clone();
+        fenceRight.position.x = fenceLength / 2;
+        scene.add(fenceRight);
+
+        const fenceBackGeometry = new THREE.BoxGeometry(fenceLength, fenceHeight, fenceThickness);
+        const fenceBack = new THREE.Mesh(fenceBackGeometry, fenceMaterial);
+        fenceBack.position.set(0, fenceHeight / 2, fenceLength / 2);
+        scene.add(fenceBack);
+
+        // Driveway
+        const drivewayGeometry = new THREE.PlaneGeometry(10, 50);
+        const drivewayMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
+        const driveway = new THREE.Mesh(drivewayGeometry, drivewayMaterial);
+        driveway.rotation.x = -Math.PI / 2;
+        driveway.position.set(0, 0.01, -35);
+        driveway.receiveShadow = true;
+        scene.add(driveway);
+
+        // House Group
+        const houseGroup = new THREE.Group();
+
+        // House Base
+        const houseWidth = 5;
+        const houseDepth = 5;
+        const houseHeight = 5;
+
+        const houseGeometry = new THREE.BoxGeometry(houseWidth, houseHeight, houseDepth);
+        const houseMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+        const house = new THREE.Mesh(houseGeometry, houseMaterial);
+        house.position.y = houseHeight / 2;
+        houseGroup.add(house);
+
+        // Roof
+        const roofHeight = 2;
+        const roofGeometry = new THREE.ConeGeometry(4, roofHeight, 4);
+        const roofMaterial = new THREE.MeshLambertMaterial({ color: 0xA52A2A });
+        const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+        roof.position.y = houseHeight + roofHeight / 2;
+        roof.rotation.y = Math.PI / 4;
+        houseGroup.add(roof);
+
+        // Chimney
+        const chimneyGeometry = new THREE.BoxGeometry(0.5, 1.5, 0.5);
+        const chimneyMaterial = new THREE.MeshLambertMaterial({ color: 0x4b3621 });
+        const chimney = new THREE.Mesh(chimneyGeometry, chimneyMaterial);
+        chimney.position.set(-1.5, houseHeight + roofHeight - 0.5, 0);
+        houseGroup.add(chimney);
+
+        // Door facing the driveway
+        const doorGeometry = new THREE.PlaneGeometry(1, 2);
+        const doorMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
+        const door = new THREE.Mesh(doorGeometry, doorMaterial);
+        door.position.set(0, 1, houseDepth / 2 + 0.01);
+        houseGroup.add(door);
+
+        // Windows on all sides
+        const windowGeometry = new THREE.PlaneGeometry(1, 1);
+        const windowMaterial = new THREE.MeshLambertMaterial({
+            color: 0x87CEEB,
+            transparent: true,
+            opacity: 0.5
+        });
+
+        const windowPositions = [
+            // Front side
+            { x: -1.5, y: houseHeight / 2, z: houseDepth / 2 + 0.01, ry: 0 },
+            { x: 1.5, y: houseHeight / 2, z: houseDepth / 2 + 0.01, ry: 0 },
+            // Back side
+            { x: -1.5, y: houseHeight / 2, z: -houseDepth / 2 - 0.01, ry: Math.PI },
+            { x: 1.5, y: houseHeight / 2, z: -houseDepth / 2 - 0.01, ry: Math.PI },
+            // Left side
+            { x: -houseWidth / 2 - 0.01, y: houseHeight / 2, z: -1.5, ry: -Math.PI / 2 },
+            { x: -houseWidth / 2 - 0.01, y: houseHeight / 2, z: 1.5, ry: -Math.PI / 2 },
+            // Right side
+            { x: houseWidth / 2 + 0.01, y: houseHeight / 2, z: -1.5, ry: Math.PI / 2 },
+            { x: houseWidth / 2 + 0.01, y: houseHeight / 2, z: 1.5, ry: Math.PI / 2 },
+        ];
+
+        windowPositions.forEach(pos => {
+            const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
+            windowMesh.position.set(pos.x, pos.y, pos.z);
+            windowMesh.rotation.y = pos.ry;
+            houseGroup.add(windowMesh);
+        });
+
+        // Rotate house to face driveway
+        houseGroup.rotation.y = Math.PI;
+        scene.add(houseGroup);
+
+        // Pool with walls and water
+        // Pool Walls
+        const poolWallGeometry = new THREE.BoxGeometry(6, 0.8, 4);
+        const poolWallMaterial = new THREE.MeshLambertMaterial({ color: 0xCCCCCC });
+        const poolWalls = new THREE.Mesh(poolWallGeometry, poolWallMaterial);
+        poolWalls.position.set(-10, 0.4, -5);
+        scene.add(poolWalls);
+
+        // Pool Water Surface
+        const poolWaterGeometry = new THREE.PlaneGeometry(5.5, 3.5);
+        const poolWaterMaterial = new THREE.MeshLambertMaterial({
+            color: 0x1E90FF,
+            transparent: true,
+            opacity: 0.7
+        });
+        const poolWater = new THREE.Mesh(poolWaterGeometry, poolWaterMaterial);
+        poolWater.rotation.x = -Math.PI / 2;
+        poolWater.position.set(-10, 0.81, -5);
+        poolWater.receiveShadow = true;
+        scene.add(poolWater);
+
+        // Pool Steps
+        const stepGeometry = new THREE.BoxGeometry(1, 0.2, 1);
+        const stepMaterial = new THREE.MeshLambertMaterial({ color: 0xAAAAAA });
+        for (let i = 0; i < 3; i++) {
+            const step = new THREE.Mesh(stepGeometry, stepMaterial);
+            step.position.set(-12.5 + i * 0.5, 0.1 + i * 0.2, -5);
+            scene.add(step);
+        }
+
+        // Chairs around the pool
+        const chairGeometry = new THREE.BoxGeometry(0.65, 0.26, 1.3); // 30% bigger
+        const chairMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+        const chairPositions = [
+            { x: -7.5, z: -6, ry: Math.PI / 4 },
+            { x: -12.5, z: -6, ry: -Math.PI / 4 },
+            { x: -10, z: -9, ry: 0 },
+            { x: -7.5, z: -4, ry: Math.PI / 2 },
+            { x: -12.5, z: -4, ry: -Math.PI / 2 }
+        ];
+
+        chairPositions.forEach(pos => {
+            const chair = new THREE.Mesh(chairGeometry, chairMaterial);
+            chair.position.set(pos.x, 0.13, pos.z);
+            chair.rotation.y = pos.ry;
+            scene.add(chair);
+        });
+
+        // Ball moving slowly in the pool
+        const ballGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        const ballMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+        const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+        ball.position.set(-10, 0.81, -5);
+        ball.castShadow = true;
+        scene.add(ball);
+
+        let ballAngle = 0;
+        const ballRadius = 1;
+        const ballSpeed = 0.001; // Very slow
+
+        // Trees inside the garden
+        const treeTrunkGeometry = new THREE.CylinderGeometry(0.5, 0.5, 3);
+        const treeTrunkMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+        const treeLeavesGeometry = new THREE.SphereGeometry(2);
+        const treeLeavesMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+
+        function createTree(x, z) {
+            const trunk = new THREE.Mesh(treeTrunkGeometry, treeTrunkMaterial);
+            trunk.position.set(x, 1.5, z);
+            scene.add(trunk);
+
+            const leaves = new THREE.Mesh(treeLeavesGeometry, treeLeavesMaterial);
+            leaves.position.set(x, 4, z);
+            scene.add(leaves);
+        }
+
+        createTree(5, 5);
+        createTree(-5, -5);
+        createTree(7, -7);
+        createTree(-7, 7);
+
+        // Dog that avoids obstacles
+        const dog = new THREE.Group();
+
+        // Dog parts
+        const dogBodyGeometry = new THREE.BoxGeometry(1.5, 0.75, 0.5);
+        const dogBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Brown color
+        const dogBody = new THREE.Mesh(dogBodyGeometry, dogBodyMaterial);
+        dogBody.position.y = 0.75;
+        dog.add(dogBody);
+
+        const dogHeadGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+        const dogHead = new THREE.Mesh(dogHeadGeometry, dogBodyMaterial);
+        dogHead.position.set(0.75, 1, 0);
+        dog.add(dogHead);
+
+        const legGeometry = new THREE.BoxGeometry(0.2, 0.5, 0.2);
+        function createLeg(x, z) {
+            const leg = new THREE.Mesh(legGeometry, dogBodyMaterial);
+            leg.position.set(x, 0.25, z);
+            dog.add(leg);
+        }
+        createLeg(0.5, 0.2);
+        createLeg(0.5, -0.2);
+        createLeg(-0.5, 0.2);
+        createLeg(-0.5, -0.2);
+
+        const tailGeometry = new THREE.BoxGeometry(0.1, 0.5, 0.1);
+        const tail = new THREE.Mesh(tailGeometry, dogBodyMaterial);
+        tail.position.set(-0.75, 1, 0);
+        tail.rotation.z = -Math.PI / 4;
+        dog.add(tail);
+
+        dog.scale.set(0.6667, 0.6667, 0.6667);
+        dog.position.set(15, 0, 0);
+        dog.castShadow = true;
+        scene.add(dog);
+
+        // Dog movement with obstacle avoidance
+        const dogPathPoints = [
+            new THREE.Vector3(15, 0, 0),
+            new THREE.Vector3(15, 0, 15),
+            new THREE.Vector3(-15, 0, 15),
+            new THREE.Vector3(-15, 0, -15),
+            new THREE.Vector3(15, 0, -15),
+            new THREE.Vector3(15, 0, 0)
+        ];
+        let dogPathIndex = 0;
+        const dogSpeed = 0.02;
+
+        function updateDogPosition() {
+            const currentPoint = dog.position;
+            const targetPoint = dogPathPoints[dogPathIndex];
+
+            const direction = new THREE.Vector3().subVectors(targetPoint, currentPoint);
+            const distance = direction.length();
+
+            if (distance < 0.1) {
+                dogPathIndex = (dogPathIndex + 1) % dogPathPoints.length;
+            } else {
+                direction.normalize();
+                dog.position.add(direction.multiplyScalar(dogSpeed));
+                dog.rotation.y = Math.atan2(-direction.z, direction.x);
+            }
+        }
+
+        // Raven
+        const raven = new THREE.Group();
+
+        const ravenBodyGeometry = new THREE.BoxGeometry(1, 0.5, 0.5);
+        const ravenBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
+        const ravenBody = new THREE.Mesh(ravenBodyGeometry, ravenBodyMaterial);
+        ravenBody.position.y = 0.25;
+        raven.add(ravenBody);
+
+        const wingGeometry = new THREE.BoxGeometry(2, 0.1, 0.5);
+        const wingLeft = new THREE.Mesh(wingGeometry, ravenBodyMaterial);
+        wingLeft.position.set(0, 0.25, 0);
+        wingLeft.rotation.z = Math.PI / 8;
+        raven.add(wingLeft);
+
+        const wingRight = wingLeft.clone();
+        wingRight.rotation.z = -Math.PI / 8;
+        raven.add(wingRight);
+
+        raven.position.set(-50, 30, -50);
+        scene.add(raven);
+
+        // Raven movement variables
+        let ravenTimer = 0;
+        const ravenFlyTime = 1200; // Slower (~20 seconds at 60fps)
+        const ravenPath = [
+            new THREE.Vector3(-50, 30, -50),
+            new THREE.Vector3(0, 25, 0),
+            new THREE.Vector3(50, 30, 50)
+        ];
+        let ravenFlying = false;
+
+        // Chimney smoke
+        const smokeParticles = [];
+        const smokeMaterial = new THREE.MeshLambertMaterial({ color: 0x555555, transparent: true, opacity: 0.8 });
+
+        function createSmoke() {
+            const smokeGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+            const smoke = new THREE.Mesh(smokeGeometry, smokeMaterial.clone());
+            const globalChimneyPosition = new THREE.Vector3();
+            chimney.getWorldPosition(globalChimneyPosition);
+            smoke.position.set(globalChimneyPosition.x, globalChimneyPosition.y + 1, globalChimneyPosition.z);
+            smokeParticles.push(smoke);
+            scene.add(smoke);
+        }
+
+        // Simplified white car representing a Tesla Model S
+        const car = new THREE.Group();
+
+        // Car body
+        const carBodyGeometry = new THREE.BoxGeometry(3, 0.75, 1.5);
+        const carBodyMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+        const carBody = new THREE.Mesh(carBodyGeometry, carBodyMaterial);
+        carBody.position.y = 0.75;
+        car.add(carBody);
+
+        // Car cabin
+        const carCabinGeometry = new THREE.BoxGeometry(2, 0.5, 1.4);
+        const carCabinMaterial = new THREE.MeshLambertMaterial({ color: 0xcccccc });
+        const carCabin = new THREE.Mesh(carCabinGeometry, carCabinMaterial);
+        carCabin.position.set(0, 1.1, 0);
+        car.add(carCabin);
+
+        // Wheels
+        const wheelGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.5, 32);
+        const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
+        function createWheel(x, z) {
+            const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+            wheel.rotation.x = Math.PI / 2; // Correct wheel orientation
+            wheel.position.set(x, 0.3, z);
+            car.add(wheel);
+        }
+        createWheel(-1, 0.9);
+        createWheel(1, 0.9);
+        createWheel(-1, -0.9);
+        createWheel(1, -0.9);
+
+        car.position.set(0, 0, -20);
+        scene.add(car);
+
+        // Shadows for all objects
+        function setShadows(object) {
+            object.traverse(function(child) {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+        }
+
+        setShadows(scene);
+
+        // Set initial camera position
+        camera.position.set(cameraRadius, 8, 0); // Lowered camera position
+        camera.lookAt(0, houseHeight / 2, 0);
+
+        // Animate the scene
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update camera position to move around the house
+            cameraAngle += 0.002;
+            camera.position.x = cameraRadius * Math.cos(cameraAngle);
+            camera.position.z = cameraRadius * Math.sin(cameraAngle);
+            camera.position.y = 8; // Lowered to see sun and clouds
+            camera.lookAt(0, houseHeight / 2, 0);
+
+            // Update controls
+            controls.update();
+
+            // Update dog position
+            updateDogPosition();
+
+            // Chimney smoke animation
+            if (Math.random() < 0.02) {
+                createSmoke();
+            }
+            for (let i = smokeParticles.length - 1; i >= 0; i--) {
+                const smoke = smokeParticles[i];
+                smoke.position.y += 0.05;
+                smoke.material.opacity -= 0.005;
+                if (smoke.material.opacity <= 0) {
+                    scene.remove(smoke);
+                    smokeParticles.splice(i, 1);
+                }
+            }
+
+            // Raven animation
+            if (!ravenFlying) {
+                ravenTimer++;
+                if (ravenTimer >= ravenFlyTime) {
+                    ravenFlying = true;
+                    ravenTimer = 0;
+                }
+            } else {
+                const t = ravenTimer / ravenFlyTime;
+                raven.position.lerpVectors(ravenPath[0], ravenPath[2], t);
+                raven.position.y += Math.sin(t * Math.PI) * 5;
+                ravenTimer++;
+                if (ravenTimer >= ravenFlyTime) {
+                    ravenFlying = false;
+                    raven.position.copy(ravenPath[0]);
+                    ravenTimer = 0;
+                }
+            }
+
+            // Update ball position
+            ballAngle += ballSpeed;
+            ball.position.x = -10 + ballRadius * Math.cos(ballAngle);
+            ball.position.z = -5 + ballRadius * Math.sin(ballAngle);
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', onWindowResize, false);
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
+</body>
+</html>
